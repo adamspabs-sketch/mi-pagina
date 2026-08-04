@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Bastion × Codex Tenebris — El Bastión de las Tres Órdenes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --oro: #D4AF37;
+    --oro-claro: #F3E5AB;
+    --brasa: #C0392B;
+    --pergamino: #2A241E;
+    --pergamino-claro: #3D3328;
+    --pergamino-borde: #5C4D3C;
+    --pergamino-texto: #E8DCC4;
+    --marfil: #F4ECD8;
+    --acero: #7F8C8D;
+    --acero-oscuro: #2C3E50;
+    --verde-codex: #27AE60;
+    --vino: #78281F;
+    --sombra-oro: rgba(212,175,55,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(ellipse 90% 60% at 50% -5%, rgba(61,51,40,.6), transparent 60%),
+      radial-gradient(ellipse 70% 45% at 50% 105%, rgba(192,57,43,.15), transparent 60%),
+      radial-gradient(ellipse 140% 100% at 50% 50%, transparent 55%, rgba(10,8,6,.85)),
+      #1A140F;
+    color: var(--pergamino-texto);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  button { cursor: pointer; font: inherit; border: none; background: none; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+  input::placeholder { color: #8C7B67; font-style: italic; }
+  ul, ol { list-style: none; }
+
+  /* Animaciones */
+  @keyframes antorcha {
+    0%, 100% { filter: drop-shadow(0 0 14px rgba(192,57,43,.6)) drop-shadow(0 0 34px rgba(212,175,55,.4)); }
+    50% { filter: drop-shadow(0 0 22px rgba(192,57,43,.9)) drop-shadow(0 0 46px rgba(212,175,55,.6)); }
+  }
+  .antorcha { animation: antorcha 3.6s ease-in-out infinite; }
+
+  @keyframes titulo-brasa {
+    0%, 100% { text-shadow: 0 0 26px rgba(192,57,43,.6), 0 0 60px rgba(212,175,55,.3); }
+    50% { text-shadow: 0 0 38px rgba(192,57,43,.85), 0 0 80px rgba(212,175,55,.5); }
+  }
+  .titulo-brasa { animation: titulo-brasa 4.4s ease-in-out infinite; }
+
+  .placa-campeon { position: relative; overflow: hidden; }
+  .placa-campeon::before {
+    content: ""; position: absolute; top: 0; left: -60%; width: 45%; height: 100%;
+    background: linear-gradient(105deg, transparent, rgba(243,229,171,.2), transparent);
+    animation: destello 6s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes destello { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } }
+
+  .revelar { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .revelar.visible { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+    .placa-campeon::before { display: none; }
+    .revelar { opacity: 1; transform: none; }
+  }
+
+  /* Marco RPG Decorativo estilo Pergamino/Escudo */
+  .marco-rpg {
+    border: 2px solid var(--pergamino-borde);
+    background: linear-gradient(135deg, var(--pergamino), var(--pergamino-claro));
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 8px 25px rgba(0,0,0,0.7);
+    position: relative;
+  }
+  .marco-rpg::after {
+    content: "❖"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--pergamino-claro); padding: 0 8px; color: var(--oro); font-size: .8rem;
+  }
+
+  /* Navegación */
+  nav.principal {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(26,20,15,.95); backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--pergamino-borde);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+  }
+  nav.principal .contenido {
+    max-width: 1000px; margin: 0 auto; display: flex; align-items: center;
+    justify-content: space-between; padding: 10px 16px;
+  }
+  .marca { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .marca span {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: .85rem;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--oro);
+  }
+  nav.principal ul { display: flex; gap: 4px; }
+  nav.principal a.enlace {
+    font-family: 'Montserrat', sans-serif; font-size: .65rem; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--pergamino-texto);
+    text-decoration: none; padding: 8px 10px; transition: color .2s;
+  }
+  nav.principal a.enlace:hover { color: var(--oro-claro); text-shadow: 0 0 8px var(--sombra-oro); }
+
+  /* Héroe */
+  header.heroe { position: relative; text-align: center; padding: 64px 16px 80px; overflow: hidden; }
+  h1 {
+    font-family: 'Cinzel', serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(2.2rem, 7vw, 3.8rem); letter-spacing: .16em; color: var(--oro);
+  }
+  .alianza { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 0 2px; }
+  .alianza .espada { color: var(--brasa); font-size: .8rem; }
+  .alianza .texto {
+    font-family: 'Montserrat', sans-serif; font-size: .6rem; font-weight: 600;
+    letter-spacing: .32em; text-transform: uppercase; color: var(--acero);
+  }
+  .codex {
+    font-family: 'Cinzel', serif; font-weight: 600; text-transform: uppercase;
+    font-size: clamp(1rem, 3.5vw, 1.35rem); letter-spacing: .16em; color: var(--verde-codex);
+  }
+  .heroe-lema { font-style: italic; font-size: 1.15rem; margin: 20px auto 0; max-width: 560px; color: var(--marfil); }
+  .luna {
+    display: inline-block; margin-top: 22px; padding: 8px 24px;
+    border-top: 1px solid var(--pergamino-borde); border-bottom: 1px solid var(--pergamino-borde);
+    font-family: 'Montserrat', sans-serif; font-size: .66rem; font-weight: 600;
+    letter-spacing: .28em; text-transform: uppercase; color: var(--oro-claro);
+    background: rgba(0,0,0,0.3);
+  }
+  .cta {
+    display: inline-block; margin-top: 30px; padding: 15px 34px;
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: .78rem;
+    letter-spacing: .16em; text-transform: uppercase; text-decoration: none;
+    color: #1A140F; background: linear-gradient(180deg, var(--oro-claro), var(--oro));
+    box-shadow: 0 0 30px var(--sombra-oro), inset 0 1px 0 rgba(255,255,255,0.4);
+    border: 1px solid #7F6A22; transition: transform .3s;
+  }
+  .cta:hover { transform: scale(1.05); }
+
+  /* Secciones */
+  section { padding: 56px 16px; scroll-margin-top: 64px; }
+  .eyebrow {
+    text-align: center; font-family: 'Montserrat', sans-serif; font-size: .62rem;
+    font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--oro); margin-bottom: 8px;
+  }
+  h2.seccion {
+    text-align: center; font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(1.4rem, 4.5vw, 1.9rem); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--oro-claro); margin-bottom: 12px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }
+  .divisor { display: flex; align-items: center; gap: 12px; max-width: 420px; margin: 0 auto 36px; }
+  .divisor::before, .divisor::after { content: ""; flex: 1; height: 1px; }
+  .divisor::before { background: linear-gradient(90deg, transparent, var(--oro)); }
+  .divisor::after { background: linear-gradient(90deg, var(--oro), transparent); }
+  .divisor .ornamento { color: var(--oro); }
+
+  /* Órdenes */
+  .tarjetas { max-width: 1000px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .tarjeta {
+    border: 2px solid var(--pergamino-borde); background: linear-gradient(145deg, var(--pergamino), var(--pergamino-claro));
+    padding: 24px; transition: transform .3s, border-color .3s, box-shadow .3s;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 6px 15px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .tarjeta::before {
+    content: "⚔"; position: absolute; top: 8px; right: 12px; color: var(--oro); opacity: 0.3; font-size: 0.9rem;
+  }
+  .tarjeta:hover { transform: translateY(-4px); border-color: var(--oro); box-shadow: 0 8px 30px var(--sombra-oro), inset 0 0 20px rgba(0,0,0,0.7); }
+  .tarjeta .icono { font-size: 1.8rem; margin-bottom: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .tarjeta .formato {
+    font-family: 'Montserrat', sans-serif; font-size: .62rem; font-weight: 700;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--oro);
+  }
+  .tarjeta h3 { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; margin: 4px 0 2px; color: var(--marfil); }
+  .tarjeta .lema { font-style: italic; color: #B3A48F; font-size: 1.02rem; margin-bottom: 14px; }
+  .tarjeta li { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; font-size: 1rem; color: var(--pergamino-texto); }
+  .tarjeta li::before { content: "✦"; color: var(--oro); }
+  .tarjeta .corona {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--pergamino-borde);
+    font-family: 'Montserrat', sans-serif; font-size: .62rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--oro-claro);
+  }
+
+  /* Ranking & Tabs */
+  .tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .tab {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: .76rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--pergamino-texto);
+    background: var(--pergamino); border: 2px solid var(--pergamino-borde); padding: 11px 16px;
+    display: flex; align-items: center; gap: 7px; transition: all .3s;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+  }
+  .tab:hover { border-color: var(--oro); color: var(--oro-claro); }
+  .tab.activa {
+    background: linear-gradient(180deg, var(--pergamino-claro), #1F1913);
+    border-color: var(--oro); color: var(--oro-claro);
+    box-shadow: 0 0 22px var(--sombra-oro), inset 0 0 15px rgba(0,0,0,0.6);
+  }
+  .orden-lema { text-align: center; font-style: italic; color: #D1C2A5; font-size: 1.05rem; }
+  .orden-regla {
+    text-align: center; font-family: 'Montserrat', sans-serif; font-size: .62rem;
+    font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--oro-claro); margin: 4px 0 20px;
+  }
+
+  .buscador-caja { max-width: 640px; margin: 0 auto 16px; }
+  .buscador-caja input {
+    width: 100%; font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+    color: var(--pergamino-texto); background: #15100C; border: 2px solid var(--pergamino-borde);
+    padding: 10px 14px; border-radius: 2px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+  }
+
+  .campeon {
+    max-width: 560px; margin: 0 auto 22px; border: 2px solid var(--oro);
+    text-align: center; padding: 22px 18px 18px;
+    background: linear-gradient(135deg, rgba(212,175,55,.15), transparent 50%), linear-gradient(180deg, var(--pergamino-claro), #1A140F);
+    box-shadow: 0 0 34px var(--sombra-oro), inset 0 0 25px rgba(0,0,0,0.7);
+    position: relative;
+  }
+  .campeon::before {
+    content: "👑"; display: block; font-size: 1.5rem; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+  }
+  .campeon .rango { font-family: 'Montserrat', sans-serif; font-size: .6rem; font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: var(--oro); }
+  .campeon .nombre { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.45rem; letter-spacing: .05em; margin-top: 6px; color: var(--marfil); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .campeon .mazo { font-style: italic; color: #D1C2A5; }
+  .campeon .marcador { margin-top: 10px; display: inline-flex; align-items: baseline; gap: 8px; font-family: 'Montserrat', sans-serif; }
+  .campeon .marcador b { font-size: 2rem; font-weight: 700; color: var(--oro-claro); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .campeon .marcador span { font-size: .6rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--acero); }
+  .vacio { text-align: center; font-style: italic; color: var(--acero); padding: 28px 10px; }
+
+  .tabla { max-width: 640px; margin: 0 auto; }
+  .fila {
+    display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--pergamino-borde); margin-top: -1px; 
+    background: linear-gradient(90deg, rgba(42,36,30,0.9), rgba(30,25,20,0.9));
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .fila:nth-child(odd) { background: linear-gradient(90deg, rgba(61,51,40,0.9), rgba(42,36,30,0.9)); }
+  .fila.podio { border-left: 4px solid var(--oro); background: linear-gradient(90deg, rgba(70,58,40,0.95), rgba(42,36,30,0.9)); }
+  .fila .puesto { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.05rem; color: var(--oro); text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+  .fila .nom { font-family: 'Cinzel', serif; font-weight: 600; font-size: .98rem; letter-spacing: .03em; color: var(--marfil); }
+  .fila .det { font-style: italic; font-size: .9rem; color: #B3A48F; }
+  .fila .pts { text-align: right; font-family: 'Montserrat', sans-serif; }
+  .fila .pts b { font-size: 1.15rem; font-weight: 700; color: var(--oro-claro); }
+  .fila .pts span { display: block; font-size: .55rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--acero); }
+
+  .controles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; grid-column: 1 / -1; }
+  .mini {
+    font-family: 'Montserrat', sans-serif; font-size: .62rem; font-weight: 600;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--pergamino-texto);
+    background: #31261D; border: 1px solid var(--pergamino-borde);
+    padding: 6px 10px; border-radius: 2px; transition: transform .15s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .mini:hover { transform: scale(1.05); border-color: var(--oro); color: var(--oro-claro); }
+  .mini.peligro { background: #3E1417; border-color: var(--vino); color: #E8B4B4; }
+
+  /* Botones y Formularios */
+  .boton-oro {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: .78rem;
+    letter-spacing: .14em; text-transform: uppercase; color: #1A140F;
+    background: linear-gradient(180deg, var(--oro-claro), var(--oro));
+    border: 1px solid #7F6A22; padding: 13px 28px; transition: transform .3s;
+    box-shadow: 0 4px 15px var(--sombra-oro);
+  }
+  .boton-oro:hover { transform: scale(1.05); }
+  .boton-oro.activo { background: transparent; color: var(--oro-claro); border: 1px solid var(--oro); }
+  
+  .boton-azul {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: .74rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--oro-claro);
+    background: linear-gradient(180deg, #3A2F25, #221A13);
+    border: 1px solid var(--oro); padding: 11px 18px; transition: transform .2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+  .boton-azul:hover { transform: scale(1.05); }
+  
+  .boton-peligro {
+    font-family: 'Montserrat', sans-serif; font-size: .64rem; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; color: #E8B4B4;
+    background: #2D1113; border: 1px solid var(--vino); padding: 9px 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+
+  .panel {
+    max-width: 640px; margin: 20px auto 0; border: 2px dashed var(--pergamino-borde);
+    padding: 18px 14px; background: linear-gradient(145deg, rgba(42,36,30,0.9), rgba(26,20,15,0.9));
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  }
+  .panel .titulo {
+    text-align: center; font-family: 'Cinzel', serif; font-weight: 600; font-size: .8rem;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--oro-claro); margin-bottom: 14px;
+  }
+  .form-fila { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .form-fila input {
+    font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--pergamino-texto);
+    background: #15100C; border: 1px solid var(--pergamino-borde);
+    padding: 10px 12px; min-width: 150px; flex: 1 1 150px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+  }
+  .centrado { text-align: center; margin-top: 22px; }
+
+  /* Jornadas */
+  .jornadas { max-width: 640px; margin: 0 auto; display: grid; gap: 12px; }
+  .jornada {
+    display: flex; align-items: center; gap: 16px; border: 2px solid var(--pergamino-borde);
+    background: linear-gradient(135deg, var(--pergamino), var(--pergamino-claro)); padding: 16px; transition: transform .3s;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.6);
+  }
+  .jornada:hover { transform: translateX(4px); }
+  .jornada .fecha {
+    flex-shrink: 0; border: 1px solid var(--oro); padding: 8px 12px; text-align: center;
+    font-family: 'Montserrat', sans-serif; font-size: .78rem; font-weight: 700;
+    text-transform: uppercase; color: var(--oro-claro); background: rgba(0,0,0,0.3);
+  }
+  .jornada .titulo { font-family: 'Cinzel', serif; font-weight: 600; letter-spacing: .04em; color: var(--marfil); }
+  .jornada .premio { font-size: .95rem; color: var(--oro-claro); }
+
+  /* Ancestros */
+  .filtros-ancestros { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filtros-ancestros .mini.activo { border-color: var(--oro); color: var(--oro-claro); background: #3A2F25; }
+  .muro { max-width: 860px; margin: 0 auto; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .ancestro {
+    position: relative; border: 2px solid var(--pergamino-borde); text-align: center; padding: 18px 14px;
+    background: linear-gradient(180deg, var(--pergamino-claro), #1A140F); transition: transform .3s;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.7), 0 4px 15px rgba(0,0,0,0.6);
+  }
+  .ancestro::before {
+    content: "🛡️"; display: block; font-size: 1.2rem; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+  }
+  .ancestro:hover { transform: translateY(-4px); border-color: var(--oro); }
+  .ancestro .rango { font-family: 'Montserrat', sans-serif; font-size: .58rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--oro); margin-top: 4px; }
+  .ancestro .nombre { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: .04em; margin-top: 4px; color: var(--marfil); }
+  .ancestro .mazo { font-style: italic; font-size: .9rem; color: #B3A48F; }
+  .ancestro .mes { font-family: 'Montserrat', sans-serif; font-size: .56rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--acero); margin-top: 8px; }
+
+  /* Casas */
+  .casas-caja {
+    max-width: 680px; margin: 0 auto; border: 2px solid var(--oro);
+    padding: 32px 24px; text-align: center;
+    background: linear-gradient(180deg, rgba(61,51,40,0.9), rgba(26,20,15,0.9));
+    box-shadow: 0 0 30px var(--sombra-oro), inset 0 0 25px rgba(0,0,0,0.8);
+  }
+  .casas-caja p.lore { font-size: 1.15rem; line-height: 1.65; color: var(--pergamino-texto); }
+  .casas-caja b { color: var(--oro-claro); }
+  .casas-caja .pronto {
+    display: inline-block; margin-top: 24px; padding: 9px 22px;
+    border-top: 1px solid var(--pergamino-borde); border-bottom: 1px solid var(--pergamino-borde);
+    font-family: 'Montserrat', sans-serif; font-size: .62rem; font-weight: 600;
+    letter-spacing: .26em; text-transform: uppercase; color: var(--brasa);
+    background: rgba(0,0,0,0.4);
+  }
+
+  /* Modales y Toasts */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100; background: rgba(10,8,6,0.9);
+    backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal {
+    background: var(--pergamino); border: 2px solid var(--oro); padding: 24px;
+    max-width: 480px; width: 100%; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8);
+  }
+  .modal h3 { font-family: 'Cinzel', serif; color: var(--oro-claro); margin-bottom: 12px; }
+  .modal p { margin-bottom: 20px; font-size: 1.05rem; color: var(--marfil); }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 99;
+    background: var(--pergamino-claro); border: 2px solid var(--oro); color: var(--marfil);
+    padding: 12px 20px; font-family: 'Montserrat', sans-serif; font-size: .75rem;
+    letter-spacing: .1em; text-transform: uppercase; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; pointer-events: none;
+  }
+  .toast.activo { opacity: 1; transform: translateY(0); }
+
+  /* Indicador de nube */
+  .nube-estado {
+    position: fixed; bottom: 20px; left: 20px; z-index: 99;
+    font-family: 'Montserrat', sans-serif; font-size: .58rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--acero);
+    background: rgba(26,20,15,0.9); border: 1px solid var(--pergamino-borde);
+    padding: 6px 12px; pointer-events: none;
+  }
+  .nube-estado.conectado { color: var(--verde-codex); border-color: var(--verde-codex); }
+
+  /* Footer */
+  footer { text-align: center; padding: 48px 16px; border-top: 2px solid var(--pergamino-borde); background: #120E0A; }
+  footer .corte { font-family: 'Cinzel', serif; font-size: .85rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--oro); }
+  footer .detalle { font-style: italic; color: #B3A48F; margin: 8px 0 24px; }
+  footer .firma { font-family: 'Montserrat', sans-serif; font-size: .6rem; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--oro); }
+</style>
+</head>
+<body>
+
+<nav class="principal" aria-label="Navegación principal">
+  <div class="contenido">
+    <a href="#inicio" class="marca">
+      <svg viewBox="0 0 100 110" width="26" height="29" aria-hidden="true">
+        <path d="M50 4 L92 18 V56 C92 84 72 100 50 106 C28 100 8 84 8 56 V18 Z" fill="#2A241E" stroke="#D4AF37" stroke-width="3"/>
+        <rect x="32" y="40" width="36" height="30" fill="#1A140F" stroke="#D4AF37" stroke-width="2"/>
+        <rect x="45" y="54" width="10" height="16" fill="#D4AF37"/>
+      </svg>
+      <span>Card Bastion</span>
+    </a>
+    <ul>
+      <li><a class="enlace" href="#ordenes">Las Órdenes</a></li>
+      <li><a class="enlace" href="#ranking">Quest Log</a></li>
+      <li><a class="enlace" href="#calendario">Incursiones</a></li>
+      <li><a class="enlace" href="#ancestros">Panteón</a></li>
+      <li><a class="enlace" href="#casas">Clanes</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header id="inicio" class="heroe">
+  <div class="escudo-heroe antorcha">
+    <svg viewBox="0 0 100 110" width="92" height="101" aria-hidden="true">
+      <path d="M50 4 L92 18 V56 C92 84 72 100 50 106 C28 100 8 84 8 56 V18 Z" fill="#2A241E" stroke="#D4AF37" stroke-width="2.5"/>
+      <path d="M50 14 L82 25 V55 C82 76 67 89 50 94 C33 89 18 76 18 55 V25 Z" fill="none" stroke="#D4AF37" stroke-width="1" opacity=".6"/>
+      <rect x="32" y="40" width="36" height="30" fill="#1A140F" stroke="#D4AF37" stroke-width="1.5"/>
+      <rect x="45" y="54" width="10" height="16" fill="#D4AF37"/>
+    </svg>
+  </div>
+  <h1 class="titulo-brasa">Card Bastion</h1>
+  <p class="alianza" aria-hidden="true">
+    <span class="espada">⚔</span><span class="texto">en alianza con</span><span class="espada">⚔</span>
+  </p>
+  <p class="codex">Codex Tenebris</p>
+  <p class="heroe-lema">Tres órdenes. Una luna. Un solo trono por conquistar.<br>
+  La campaña mensual de Commander donde el Bastión corona a sus leyendas.</p>
+  <div class="luna" id="luna-actual"></div>
+  <div><a href="#ranking" class="cta">Consultar el Quest Log</a></div>
+</header>
+
+<section id="ordenes" class="revelar" aria-label="Las Tres Órdenes">
+  <p class="eyebrow">Tablas de Gremios</p>
+  <h2 class="seccion">Las Tres Órdenes</h2>
+  <div class="divisor"><span class="ornamento">❖</span></div>
+  <div class="tarjetas" id="tarjetas-ordenes"></div>
+</section>
+
+<section id="ranking" class="revelar" aria-label="El Ranking de la Luna">
+  <p class="eyebrow">Registro de Aventureros</p>
+  <h2 class="seccion">Quest Log &amp; Leaderboard</h2>
+  <div class="divisor"><span class="ornamento">❖</span></div>
+  <div class="tabs" role="tablist" id="tabs-ordenes"></div>
+  <p class="orden-lema" id="orden-lema"></p>
+  <p class="orden-regla" id="orden-regla"></p>
+
+  <div class="buscador-caja">
+    <input type="text" id="inp-buscar" placeholder="🔍 Rastrear aventurero o baraja..." aria-label="Buscar contendiente">
+  </div>
+
+  <div id="zona-campeon"></div>
+  <ol class="tabla" id="tabla-ranking"></ol>
+
+  <div class="centrado">
+    <button class="boton-oro" id="btn-escriba">✒ Modo Escriba (Gamemaster)</button>
+  </div>
+
+  <div id="panel-escriba" hidden>
+    <div class="panel">
+      <p class="titulo">Inscribir nuevo aventurero</p>
+      <div class="form-fila">
+        <input id="inp-nombre" placeholder="Nombre del Héroe">
+        <input id="inp-mazo" placeholder="Comandante / Baraja">
+        <button class="boton-azul" id="btn-inscribir">+ Reclutar</button>
+      </div>
+      <div class="centrado" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:15px;">
+        <button class="boton-peligro" id="btn-abrir-modal-luna">🌑 Concluir Ciclo de Luna</button>
+        <button class="mini" id="btn-exportar">💾 Respaldar Pergaminos</button>
+        <label class="mini" style="cursor:pointer; display:inline-block;">
+          📂 Cargar Archivo <input type="file" id="inp-importar" accept=".json" style="display:none">
+        </label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="calendario" class="revelar" aria-label="Jornadas y Botín">
+  <p class="eyebrow">Tablón de Misiones</p>
+  <h2 class="seccion">Incursiones &amp; Botines</h2>
+  <div class="divisor"><span class="ornamento">❖</span></div>
+  <div class="jornadas" id="lista-jornadas"></div>
+  <div id="panel-jornadas" hidden>
+    <div class="panel">
+      <p class="titulo">Publicar misión en el tablón</p>
+      <div class="form-fila">
+        <input id="inp-fecha" placeholder="Sáb 15 Ago" style="max-width:120px;">
+        <input id="inp-titulo" placeholder="Incursión · Orden del Dragón">
+        <input id="inp-premio" placeholder="Recompensa (sobre, playmat…)">
+        <button class="boton-azul" id="btn-proclamar">Publicar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ancestros" class="revelar" aria-label="Muro de los Ancestros">
+  <p class="eyebrow">Salón de la Fama</p>
+  <h2 class="seccion">Panteón de los Ancestros</h2>
+  <div class="divisor"><span class="ornamento">❖</span></div>
+
+  <div class="filtros-ancestros">
+    <button class="mini activo" data-filtro-ancestro="todas">Todos</button>
+    <button class="mini" data-filtro-ancestro="dragon">Dragón</button>
+    <button class="mini" data-filtro-ancestro="grimorio">Grimorio</button>
+    <button class="mini" data-filtro-ancestro="escudero">Escudero</button>
+  </div>
+
+  <div class="muro" id="muro-ancestros"></div>
+</section>
+
+<section id="casas" class="revelar" aria-label="La Era de las Casas">
+  <p class="eyebrow">Profecía de Gremios</p>
+  <h2 class="seccion">La Era de los Clanes</h2>
+  <div class="divisor"><span class="ornamento">❖</span></div>
+  <div class="casas-caja">
+    <p class="lore">
+      Cuando la luna haya consagrado a suficientes héroes, el Bastión abrirá sus puertas a la <b>Era de los Clanes</b>.
+      Los aventureros unirán fuerzas bajo estandartes comunes. Al final de cada temporada, las facciones más poderosas se enfrentarán en la <b>Guerra de Estandartes</b> por la gloria eterna.
+    </p>
+    <p class="pronto">Próximamente · Los estandartes aguardan</p>
+  </div>
+</section>
+
+<footer>
+  <p class="corte">⚜ La Gran Corte del Bastión ⚜</p>
+  <p class="detalle">Último fin de semana de cada ciclo lunar · el top 4 de cada orden combate por el cetro.</p>
+  <p class="firma">Card Bastion TCG's &amp; Más × Codex Tenebris</p>
+</footer>
+
+<!-- Modal Confirmación -->
+<div class="modal-overlay" id="modal-luna" hidden>
+  <div class="modal">
+    <h3>🌑 Concluir Ciclo Lunar</h3>
+    <p>Los campeones actuales serán inmortalizados en el Panteón y las puntuaciones se restablecerán para la próxima aventura. ¿Deseas proceder?</p>
+    <button class="boton-peligro" id="btn-confirmar-luna">Sí, que descienda el ocaso</button>
+    <button class="boton-oro activo" id="btn-cancelar-luna">Cancelar</button>
+  </div>
+</div>
+
+<!-- Notificaciones Toast -->
+<div class="toast" id="toast">Acción registrada</div>
+
+<!-- Estado de sincronización con la nube -->
+<div class="nube-estado" id="nube-estado">☁ Conectando…</div>
+
+<script type="module">
+"use strict";
+
+/* ═══════════════ FIREBASE (Realtime Database) ═══════════════ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8R5A7xfijZ1kAEK5mSy37bxYuJA-vmAw",
+  authDomain: "appodex-19834.firebaseapp.com",
+  databaseURL: "https://appodex-19834-default-rtdb.firebaseio.com",
+  projectId: "appodex-19834",
+  storageBucket: "appodex-19834.firebasestorage.app",
+  messagingSenderId: "157669094800",
+  appId: "1:157669094800:web:3b2ad806cad3bffe75af15"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getDatabase(appFirebase);
+const refDatos = ref(db, "bastion");
+/* ════════════════════════════════════════════════════════════ */
+
+const CLAVE = "bastion-codex-v2";
+
+const ORDENES = {
+  dragon: {
+    nombre: "Orden del Dragón", icono: "🐉", corto: "Dragón", formato: "cEDH",
+    lema: "La élite de combate. Solo la victoria importa.", regla: "1 Sello por calabozo conquistado · desempate por % de triunfos",
+    reglas: ["Cada calabozo ganado otorga un Sello.", "El empate táctico no otorga sellos.", "Desempate por ratio de victorias."],
+    titulo: "Señor de la Guerra", unidad: "Sellos", tipo: "sellos"
+  },
+  grimorio: {
+    nombre: "Orden del Grimorio", icono: "📜", corto: "Grimorio", formato: "Bracket 3",
+    lema: "Los eruditos de la magia arcana.", regla: "1° = 5 · 2° = 3 · 3° = 2 · 4° = 1 · Asistencia +1",
+    reglas: ["Victoria: 5 Páginas | 2°: 3 | 3°: 2 | 4°: 1", "Asistencia a quest: +1 Página adicional."],
+    titulo: "Archimago del Bastión", unidad: "Páginas", tipo: "puntos"
+  },
+  escudero: {
+    nombre: "Orden del Escudero", icono: "🛡️", corto: "Escudero", formato: "Precon",
+    lema: "El sendero donde forjan su temple los novatos.", regla: "1° = 5 · 2° = 3 · 3° = 2 · 4° = 1 · Asistencia +1",
+    reglas: ["Puntuación estándar de campaña.", "Restringido a mazos preconstruidos."],
+    titulo: "Caballero Ascendido", unidad: "Puntos", tipo: "puntos"
+  }
+};
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const ROMANOS = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+
+const lunaActual = () => "Luna de " + MESES[new Date().getMonth()] + " · " + new Date().getFullYear();
+
+const datosPorDefecto = () => ({ mes: lunaActual(), jugadores: { dragon: [], grimorio: [], escudero: [] }, jornadas: [], ancestros: [] });
+
+// Firebase no guarda arreglos vacíos: al leer, garantizamos la estructura completa
+const aLista = (x) => Array.isArray(x) ? x : (x && typeof x === "object" ? Object.values(x) : []);
+function normalizar(d) {
+  d = d || {};
+  const jg = d.jugadores || {};
+  return {
+    mes: d.mes || lunaActual(),
+    jugadores: { dragon: aLista(jg.dragon), grimorio: aLista(jg.grimorio), escudero: aLista(jg.escudero) },
+    jornadas: aLista(d.jornadas),
+    ancestros: aLista(d.ancestros)
+  };
+}
+
+const tieneContenido = (d) =>
+  d.jugadores.dragon.length || d.jugadores.grimorio.length || d.jugadores.escudero.length ||
+  d.jornadas.length || d.ancestros.length;
+
+// Carga inicial: caché local para mostrar algo al instante; la nube manda después
+let datos = (() => {
+  try {
+    const raw = localStorage.getItem(CLAVE);
+    if (raw) return normalizar(JSON.parse(raw));
+  } catch (e) { console.error(e); }
+  return datosPorDefecto();
+})();
+
+let nubeSincronizada = false;
+
+function guardar() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) { console.error(e); }
+  set(refDatos, datos).catch(err => {
+    console.error("Error al guardar en la nube:", err);
+    notificar("⚠ Sin conexión · guardado solo en este dispositivo");
+  });
+}
+
+function marcarNube(conectado) {
+  const n = document.getElementById("nube-estado");
+  n.textContent = conectado ? "☁ Sincronizado" : "☁ Sin conexión";
+  n.classList.toggle("conectado", conectado);
+}
+
+function notificar(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("activo");
+  setTimeout(() => t.classList.remove("activo"), 3000);
+}
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const idNuevo = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const puntosDe = (j) => (j.p1 || 0) * 5 + (j.p2 || 0) * 3 + (j.p3 || 0) * 2 + (j.p4 || 0) + (j.asistencia || 0);
+const pctDe = (j) => ((j.games || 0) > 0 ? Math.round(((j.wins || 0) / j.games) * 100) : 0);
+
+function ordenarLista(lista, tipo) {
+  return [...lista].sort((a, b) =>
+    tipo === "sellos"
+      ? (b.wins || 0) - (a.wins || 0) || pctDe(b) - pctDe(a) || (b.games || 0) - (a.games || 0)
+      : puntosDe(b) - puntosDe(a) || (b.p1 || 0) - (a.p1 || 0) || (b.asistencia || 0) - (a.asistencia || 0)
+  );
+}
+
+let orden = "dragon";
+let editando = false;
+let busqueda = "";
+let filtroAncestro = "todas";
+
+function renderOrdenes() {
+  document.getElementById("tarjetas-ordenes").innerHTML = Object.values(ORDENES).map(o => `
+    <article class="tarjeta">
+      <div class="icono">${o.icono}</div>
+      <p class="formato">${o.formato}</p>
+      <h3>${o.nombre}</h3>
+      <p class="lema">${o.lema}</p>
+      <ul>${o.reglas.map(r => `<li>${r}</li>`).join("")}</ul>
+      <p class="corona">Título: ${o.titulo}</p>
+    </article>
+  `).join("");
+}
+
+function renderTabs() {
+  document.getElementById("tabs-ordenes").innerHTML = Object.entries(ORDENES).map(([k, o]) => `
+    <button class="tab ${orden === k ? "activa" : ""}" data-orden="${k}">
+      <span>${o.icono}</span>${o.corto}
+    </button>
+  `).join("");
+}
+
+function htmlControles(j, tipo) {
+  if (!editando) return "";
+  const b = (l, c, d, p) => `<button class="mini ${p ? "peligro" : ""}" data-ajustar="${j.id}" data-campo="${c}" data-delta="${d}">${l}</button>`;
+  return `<div class="controles">
+    ${tipo === "sellos"
+      ? b("+ Victoria", "wins", 1) + b("+ Quest Jugada", "games", 1) + b("− Victoria", "wins", -1) + b("− Quest", "games", -1)
+      : b("+1°", "p1", 1) + b("+2°", "p2", 1) + b("+3°", "p3", 1) + b("+4°", "p4", 1) + b("+Asist", "asistencia", 1) + b("−1°", "p1", -1) + b("−Asist", "asistencia", -1)}
+    <button class="mini peligro" data-eliminar="${j.id}">✕ Desterrar</button>
+  </div>`;
+}
+
+function renderRanking() {
+  const cfg = ORDENES[orden];
+  const listaCompleta = ordenarLista(datos.jugadores[orden] || [], cfg.tipo);
+
+  const lider = listaCompleta[0];
+  const coincide = (j) => !busqueda ||
+    j.nombre.toLowerCase().includes(busqueda) ||
+    (j.mazo || "").toLowerCase().includes(busqueda);
+  
+  const filas = listaCompleta
+    .map((j, i) => ({ j, i }))
+    .filter(({ j, i }) => coincide(j) && (busqueda ? true : i > 0));
+
+  document.getElementById("orden-lema").textContent = cfg.lema;
+  document.getElementById("orden-regla").textContent = cfg.regla;
+
+  document.getElementById("zona-campeon").innerHTML = lider ? `
+    <div class="campeon placa-campeon">
+      <p class="rango">${cfg.titulo}</p>
+      <p class="nombre">${esc(lider.nombre)}</p>
+      ${lider.mazo ? `<p class="mazo">${esc(lider.mazo)}</p>` : ""}
+      <p class="marcador">
+        <b>${cfg.tipo === "sellos" ? (lider.wins || 0) : puntosDe(lider)}</b>
+        <span>${cfg.unidad} ${cfg.tipo === "sellos" ? "· " + pctDe(lider) + "% de " + (lider.games || 0) : ""}</span>
+      </p>
+      ${htmlControles(lider, cfg.tipo)}
+    </div>` : `<p class="vacio">El trono aguarda por un valiente.</p>`;
+
+  document.getElementById("tabla-ranking").innerHTML = filas.map(({ j, i }) => `
+    <li class="fila ${i < 3 && i > 0 ? "podio" : ""}">
+      <div class="puesto">${ROMANOS[i] || i + 1}</div>
+      <div>
+        <p class="nom">${esc(j.nombre)}</p>
+        ${j.mazo ? `<p class="det">${esc(j.mazo)}</p>` : ""}
+      </div>
+      <div class="pts">
+        <b>${cfg.tipo === "sellos" ? (j.wins || 0) : puntosDe(j)}</b>
+        <span>${cfg.tipo === "sellos" ? pctDe(j) + "% · " + (j.games || 0) + "J" : (j.asistencia || 0) + " Asist."}</span>
+      </div>
+      ${htmlControles(j, cfg.tipo)}
+    </li>
+  `).join("");
+}
+
+function renderJornadas() {
+  const cont = document.getElementById("lista-jornadas");
+  cont.innerHTML = !datos.jornadas || datos.jornadas.length === 0 ? `<p class="vacio">No hay misiones publicadas en el tablón.</p>` :
+    datos.jornadas.map(j => `
+      <div class="jornada">
+        <div class="fecha">${esc(j.fecha)}</div>
+        <div>
+          <p class="titulo">${esc(j.titulo)}</p>
+          ${j.premio ? `<p class="premio">🎁 Botín: ${esc(j.premio)}</p>` : ""}
+        </div>
+        ${editando ? `<button class="mini peligro" style="margin-left:auto" data-quitar-jornada="${j.id}">✕</button>` : ""}
+      </div>
+    `).join("");
+}
+
+function renderAncestros() {
+  const cont = document.getElementById("muro-ancestros");
+  let filtrados = datos.ancestros || [];
+  if (filtroAncestro !== "todas") filtrados = filtrados.filter(a => a.orden === filtroAncestro);
+
+  document.querySelectorAll("[data-filtro-ancestro]").forEach(b =>
+    b.classList.toggle("activo", b.dataset.filtroAncestro === filtroAncestro));
+
+  cont.innerHTML = filtrados.length === 0 ? `<p class="vacio" style="grid-column: 1/-1">El panteón aguarda las leyendas del primer ciclo.</p>` :
+    filtrados.map(a => `
+      <div class="ancestro">
+        <p class="rango">${esc(ORDENES[a.orden]?.titulo || "Campeón")}</p>
+        <p class="nombre">${esc(a.nombre)}</p>
+        ${a.mazo ? `<p class="mazo">${esc(a.mazo)}</p>` : ""}
+        <p class="mes">${esc(a.mes)}</p>
+      </div>
+    `).join("");
+}
+
+function actualizarInterfaz() {
+  document.getElementById("luna-actual").textContent = datos.mes || lunaActual();
+  renderTabs();
+  renderRanking();
+  renderJornadas();
+  renderAncestros();
+  
+  document.getElementById("panel-escriba").hidden = !editando;
+  document.getElementById("panel-jornadas").hidden = !editando;
+  document.getElementById("btn-escriba").textContent = editando ? "✓ Cerrar Modo Escriba" : "✒ Modo Escriba (Gamemaster)";
+}
+
+function iniciar() {
+  renderOrdenes();
+  actualizarInterfaz();
+
+  // Escucha permanente de la nube: cualquier cambio (desde cualquier dispositivo) refresca la vista
+  onValue(refDatos, (snap) => {
+    const val = snap.val();
+    if (val) {
+      datos = normalizar(val);
+      try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) {}
+      actualizarInterfaz();
+    } else if (!nubeSincronizada && tieneContenido(datos)) {
+      // La nube está vacía pero este dispositivo tiene datos: migrarlos una sola vez
+      set(refDatos, datos).catch(console.error);
+    }
+    nubeSincronizada = true;
+    marcarNube(true);
+  }, (err) => {
+    console.error("Error de conexión con la nube:", err);
+    marcarNube(false);
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".revelar").forEach(s => observer.observe(s));
+
+  document.getElementById("tabs-ordenes").addEventListener("click", e => {
+    const btn = e.target.closest("[data-orden]");
+    if (btn) {
+      orden = btn.dataset.orden;
+      renderTabs();
+      renderRanking();
+    }
+  });
+
+  document.getElementById("inp-buscar").addEventListener("input", e => {
+    busqueda = e.target.value.toLowerCase().trim();
+    renderRanking();
+  });
+
+  document.getElementById("btn-escriba").addEventListener("click", () => {
+    editando = !editando;
+    actualizarInterfaz();
+    notificar(editando ? "Modo Gamemaster Activo" : "Modo Gamemaster Cerrado");
+  });
+
+  document.getElementById("btn-inscribir").addEventListener("click", () => {
+    const nombre = document.getElementById("inp-nombre").value.trim();
+    const mazo = document.getElementById("inp-mazo").value.trim();
+    if (!nombre) { notificar("El aventurero requiere un nombre"); return; }
+    
+    if (!datos.jugadores[orden]) datos.jugadores[orden] = [];
+    datos.jugadores[orden].push({ id: idNuevo(), nombre, mazo, wins: 0, games: 0, p1: 0, p2: 0, p3: 0, p4: 0, asistencia: 0 });
+    
+    guardar();
+    renderRanking();
+    document.getElementById("inp-nombre").value = "";
+    document.getElementById("inp-mazo").value = "";
+    notificar("¡Aventurero reclutado con éxito!");
+  });
+
+  document.getElementById("ranking").addEventListener("click", e => {
+    const btnAjustar = e.target.closest("[data-ajustar]");
+    const btnEliminar = e.target.closest("[data-eliminar]");
+
+    if (btnAjustar) {
+      const id = btnAjustar.dataset.ajustar;
+      const campo = btnAjustar.dataset.campo;
+      const delta = Number(btnAjustar.dataset.delta);
+      const j = (datos.jugadores[orden] || []).find(x => x.id === id);
+      if (j) {
+        j[campo] = Math.max(0, (j[campo] || 0) + delta);
+        guardar();
+        renderRanking();
+      }
+    }
+
+    if (btnEliminar) {
+      const id = btnEliminar.dataset.eliminar;
+      if (confirm("¿Deseas desterrar a este aventurero de los registros?")) {
+        datos.jugadores[orden] = (datos.jugadores[orden] || []).filter(x => x.id !== id);
+        guardar();
+        renderRanking();
+        notificar("Aventurero desterrado");
+      }
+    }
+  });
+
+  document.getElementById("btn-proclamar").addEventListener("click", () => {
+    const fecha = document.getElementById("inp-fecha").value.trim();
+    const titulo = document.getElementById("inp-titulo").value.trim();
+    const premio = document.getElementById("inp-premio").value.trim();
+    if (!fecha || !titulo) { notificar("Especifica la fecha y el título de la misión"); return; }
+
+    if (!datos.jornadas) datos.jornadas = [];
+    datos.jornadas.push({ id: idNuevo(), fecha, titulo, premio });
+    guardar();
+    renderJornadas();
+    document.getElementById("inp-fecha").value = "";
+    document.getElementById("inp-titulo").value = "";
+    document.getElementById("inp-premio").value = "";
+    notificar("Misión publicada en el tablón");
+  });
+
+  document.getElementById("lista-jornadas").addEventListener("click", e => {
+    const btn = e.target.closest("[data-quitar-jornada]");
+    if (btn) {
+      datos.jornadas = datos.jornadas.filter(j => j.id !== btn.dataset.quitarJornada);
+      guardar();
+      renderJornadas();
+      notificar("Misión retirada");
+    }
+  });
+
+  document.querySelector(".filtros-ancestros").addEventListener("click", e => {
+    const btn = e.target.closest("[data-filtro-ancestro]");
+    if (btn) {
+      filtroAncestro = btn.dataset.filtroAncestro;
+      renderAncestros();
+    }
+  });
+
+  const modal = document.getElementById("modal-luna");
+  document.getElementById("btn-abrir-modal-luna").addEventListener("click", () => modal.hidden = false);
+  document.getElementById("btn-cancelar-luna").addEventListener("click", () => modal.hidden = true);
+  
+  document.getElementById("btn-confirmar-luna").addEventListener("click", () => {
+    if (!datos.ancestros) datos.ancestros = [];
+    const mesActual = datos.mes || lunaActual();
+
+    Object.keys(ORDENES).forEach(key => {
+      const lista = ordenarLista(datos.jugadores[key] || [], ORDENES[key].tipo);
+      if (lista.length > 0) {
+        const lider = lista[0];
+        datos.ancestros.unshift({
+          orden: key,
+          nombre: lider.nombre,
+          mazo: lider.mazo || "",
+          mes: mesActual
+        });
+      }
+      datos.jugadores[key] = [];
+    });
+
+    datos.mes = lunaActual();
+    guardar();
+    modal.hidden = true;
+    actualizarInterfaz();
+    notificar("El ciclo lunar ha concluido. Los campeones descansan en el Panteón.");
+  });
+
+  document.getElementById("btn-exportar").addEventListener("click", () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
+    const dlAnchor = document.createElement("a");
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `card-bastion-pergamino-${Date.now()}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    notificar("Pergaminos respaldados con éxito");
+  });
+
+  document.getElementById("inp-importar").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed && parsed.jugadores) {
+          datos = normalizar(parsed);
+          guardar();
+          actualizarInterfaz();
+          notificar("Pergaminos restaurados correctamente");
+        } else {
+          alert("El archivo no contiene un pergamino de respaldo válido.");
+        }
+      } catch (err) {
+        alert("Error al leer el archivo JSON.");
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", iniciar);
+} else {
+  iniciar();
+}
+</script>
+</body>
+</html>
