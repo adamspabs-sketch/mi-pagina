@@ -478,6 +478,7 @@
         <label class="mini" style="cursor:pointer; display:inline-block;">
           📂 Cargar Archivo <input type="file" id="inp-importar" accept=".json" style="display:none">
         </label>
+        <button class="mini peligro" id="btn-salir">🚪 Cerrar Sesión</button>
       </div>
     </div>
   </div>
@@ -545,6 +546,20 @@
   </div>
 </div>
 
+<!-- Modal Acceso del Escriba -->
+<div class="modal-overlay" id="modal-acceso" hidden>
+  <div class="modal">
+    <h3>✒ Acceso del Escriba</h3>
+    <p>Solo el Gamemaster puede alterar los registros del Bastión.</p>
+    <div class="form-fila" style="margin-bottom:18px;">
+      <input id="inp-correo" type="email" autocomplete="username" placeholder="Correo del Gamemaster">
+      <input id="inp-clave" type="password" autocomplete="current-password" placeholder="Palabra secreta">
+    </div>
+    <button class="boton-oro" id="btn-entrar">Entrar</button>
+    <button class="boton-oro activo" id="btn-cancelar-acceso">Cancelar</button>
+  </div>
+</div>
+
 <!-- Notificaciones Toast -->
 <div class="toast" id="toast">Acción registrada</div>
 
@@ -557,6 +572,7 @@
 /* ═══════════════ FIREBASE (Realtime Database) ═══════════════ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8R5A7xfijZ1kAEK5mSy37bxYuJA-vmAw",
@@ -571,6 +587,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getDatabase(appFirebase);
 const refDatos = ref(db, "bastion");
+const auth = getAuth(appFirebase);
+let usuario = null;
 /* ════════════════════════════════════════════════════════════ */
 
 const CLAVE = "bastion-codex-v2";
@@ -635,7 +653,7 @@ function guardar() {
   try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) { console.error(e); }
   set(refDatos, datos).catch(err => {
     console.error("Error al guardar en la nube:", err);
-    notificar("⚠ Sin conexión · guardado solo en este dispositivo");
+    notificar("⚠ No se pudo guardar en la nube (verifica conexión o sesión)");
   });
 }
 
@@ -833,10 +851,50 @@ function iniciar() {
     renderRanking();
   });
 
+  // Sesión: si el Gamemaster ya inició sesión antes, se mantiene entre visitas
+  onAuthStateChanged(auth, (u) => {
+    usuario = u;
+    if (!u && editando) { editando = false; actualizarInterfaz(); }
+  });
+
   document.getElementById("btn-escriba").addEventListener("click", () => {
+    if (!usuario) {
+      document.getElementById("modal-acceso").hidden = false;
+      return;
+    }
     editando = !editando;
     actualizarInterfaz();
     notificar(editando ? "Modo Gamemaster Activo" : "Modo Gamemaster Cerrado");
+  });
+
+  const modalAcceso = document.getElementById("modal-acceso");
+  document.getElementById("btn-cancelar-acceso").addEventListener("click", () => modalAcceso.hidden = true);
+
+  document.getElementById("btn-entrar").addEventListener("click", () => {
+    const correo = document.getElementById("inp-correo").value.trim();
+    const clave = document.getElementById("inp-clave").value;
+    if (!correo || !clave) { notificar("Ingresa correo y palabra secreta"); return; }
+    signInWithEmailAndPassword(auth, correo, clave)
+      .then(() => {
+        modalAcceso.hidden = true;
+        document.getElementById("inp-correo").value = "";
+        document.getElementById("inp-clave").value = "";
+        editando = true;
+        actualizarInterfaz();
+        notificar("Modo Gamemaster Activo");
+      })
+      .catch(() => notificar("⚠ El Bastión no reconoce esas credenciales"));
+  });
+
+  document.getElementById("inp-clave").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("btn-entrar").click();
+  });
+
+  document.getElementById("btn-salir").addEventListener("click", () => {
+    signOut(auth);
+    editando = false;
+    actualizarInterfaz();
+    notificar("Sesión del Gamemaster cerrada");
   });
 
   document.getElementById("btn-inscribir").addEventListener("click", () => {
